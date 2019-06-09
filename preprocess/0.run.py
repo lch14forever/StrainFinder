@@ -22,20 +22,27 @@ g4.add_argument('--dcov', help='Remove sites with coverage > [dcov] standard dev
 g4.add_argument('--npos', help='Randomly subsample [npos] alignment sites', type=int, default=None)
 args = parser.parse_args()
 
+## FIXME:
+### This has to take pair-end data
+
+## TESTME:
+### This should takes gzipped fastq now
+### This is supposed to be more disk-storage friendly
+
 # Read input data
-prefixes = [re.sub('.fastq', '', line.rstrip()) for line in open(args.fastqs)]
+prefixes = [re.sub('.fastq.*', '', line.rstrip()) for line in open(args.fastqs)]
 
-# 1) Run BWA on each FASTQ
+## optimized for storage
 for prefix in prefixes:
-    print 'bwa mem -a %s %s.fastq > %s.sam' %(args.ref, prefix, prefix)
-
-# 2) Filter SAM files
-for prefix in prefixes:
+    # 1) Run BWA on each FASTQ
+    print 'bwa mem -a %s %s.fastq* > %s.sam' %(args.ref, prefix, prefix)
+    print 'rm -f %s.fastq*' %(prefix)
+    # 2) Filter SAM files
     print 'python 1.filter_sam.py %s.sam %s %s > %s.filter.sam' %(prefix, args.pct, args.len, prefix)
-
-# 3) Convert to BAM
-for prefix in prefixes:
+    print 'rm -f %s.sam' %(prefix)
+    # 3) Convert to BAM
     print 'samtools view -bS -F 4 -o %s.bam %s.filter.sam' %(prefix, prefix)
+    print 'rm -f %s.filter.sam' %(prefix)
     print 'samtools sort %s.bam -o %s.sorted' %(prefix, prefix)
     print 'samtools index %s.sorted.bam' %(prefix)
 

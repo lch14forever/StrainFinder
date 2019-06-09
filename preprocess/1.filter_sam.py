@@ -35,6 +35,10 @@ fn = sys.argv[1]
 pctid = float(sys.argv[2])
 minlen = int(sys.argv[3])
 
+if fn == '-':
+    f = sys.stdin
+else:
+    f = open(fn, 'rU')
 
 # initialize variables
 cquery = ''
@@ -44,7 +48,7 @@ cstrand = ''
 
 
 # parse file
-for line in open(fn):
+for line in f:
 
     # print header
     if line.startswith('@'):
@@ -99,10 +103,12 @@ for line in open(fn):
     else:
         sline[9] = reverse_complement(cseq)
         sline[10] = reverse_complement(cseq)
-    
+        
+    ## CH: this can cause a problem when the last alignment contains hard clipping
+    ## CH: you cannot compare the hard clipped sequence with the current CIGAR
     # ensure that the cigar matches the sequence
     if tlen != (len(cseq) - hbeg - hend):
-        quit('ERROR 3: SAM file format')
+       quit('ERROR 3: SAM file format')
     
     # finally, print quality filtered line
     print '\t'.join(sline)
