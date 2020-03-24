@@ -93,7 +93,7 @@ for genome in y:
     # Filter samples by fraction of aligned sites
     if x.shape[0] > 0 and x.shape[1] > 0:
         cov = coverage(x)
-        pos = ((cov == 0).sum(axis=1) > args.faln*x.shape[1])
+        pos = ((cov != 0).sum(axis=1) > args.faln*x.shape[1])
         x = x[pos,:,:]
         i = i[pos]
         print '\tFiltering samples by fraction aligned [%d x %d]' %(len(i), len(j))
